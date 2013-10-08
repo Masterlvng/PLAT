@@ -1,5 +1,5 @@
-from flask import session, abort
-from functools import wraps
+from flask import session, abort, g, request, current_app
+from functools import wraps, update_wrapper
 from app.models import User,Annoucement
 from app import db
 
@@ -26,14 +26,16 @@ def remember_user(user):
     session['user']=user
 
 def Role_required(*roles):
-    def wrapper(f):
-        @wraps(f)
-        def wrapped(*args, **kwargs):
-            if current_user().role not in roles:
+    def decorator(fn):
+        def wrapped_func(*args, **kwargs):
+            print args,kwargs
+            if current_user() is None:
+                return 'need to login!'
+            elif current_user().role not in roles:
                 abort(403)
-            return f(*args, **kwargs)
-        return wrapped
-    return wrapper
+            return fn(*args, **kwargs)
+        return update_wrapper(wrapped_func,fn)
+    return decorator
 
 def check_annoucement_name(name):
     return Annoucement.query.filter(Annoucement.name==name).count() == 0
