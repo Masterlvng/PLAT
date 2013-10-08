@@ -1,6 +1,6 @@
 from flask import session, abort
 from functools import wraps
-from app.models import User
+from app.models import User,Annoucement
 from app import db
 
 def load_user_by_id(id):
@@ -29,9 +29,12 @@ def Role_required(*roles):
     def wrapper(f):
         @wraps(f)
         def wrapped(*args, **kwargs):
-            if current_user.role not in roles:
+            if current_user().role not in roles:
                 abort(403)
             return f(*args, **kwargs)
         return wrapped
     return wrapper
+
+def check_annoucement_name(name):
+    return Annoucement.query.filter(Annoucement.name==name).count() == 0
 
