@@ -3,13 +3,27 @@ from functools import wraps
 from app.models import User
 from app import db
 
-def load_user(id):
-    return User.query().filter(User.id=id).first()
+def load_user_by_id(id):
+    return User.query.filter(User.id==id).first()
 
-@property
+def load_user_by_name(name):
+    return User.query.filter(User.nickname==name).first()
+
+def load_user_by_email(email):
+    return User.query.filter(User.email==email).first()
+
 def current_user():
-    return session['user']
+    if 'user' not in session:
+        return None
+    else:
+        return session['user']
 
+def logout_user():
+    if 'user' in session:
+        session.pop('user')
+
+def remember_user(user):
+    session['user']=user
 
 def Role_required(*roles):
     def wrapper(f):
