@@ -1,7 +1,8 @@
 import unittest
 from StringIO import StringIO
 from app import app, db
-from app.models import User, ROLE_ADMIN,ROLE_OFFICIAL
+from app.models import User, ROLE_ADMIN,ROLE_OFFICIAL, Annoucement
+import json
 
 class TestCase(unittest.TestCase):
     def setUp(self):
@@ -14,6 +15,7 @@ class TestCase(unittest.TestCase):
     def tearDown(self):
         db.session.remove()
         db.drop_all()
+
 
     def test_Login(self):
         u = User(nickname='masterlvng',password='123456',email='masterlvng@gmail.com',\
@@ -33,6 +35,8 @@ class TestCase(unittest.TestCase):
         self.test_Login()
         with open('arch.jpg') as f:
             poster = StringIO(f.read())
+        with open('form.doc') as f:
+            form = StringIO(f.read())
         rv = self.app.post('/issue/annoucement',data=dict(
                 name='weinasi',
                 topic="vernas",
@@ -44,22 +48,40 @@ class TestCase(unittest.TestCase):
                 host="gbt",
                 undertaker="gbt2",
                 sponsor="donggandidai",
+                form=(form,'form.doc'),
                 contact="qq=370378348",
                 qna="hehe",
-                accept_apply=0,
+                accept_apply=1,
                 user_id=1
             ))
         assert 'success' in rv.data
 
     def test_Dis_Annoucement(self):
         self.test_Issue_Ann()
-        rv = self.app.get('/masterlvn/weinasi')
+        rv = self.app.get('/masterlvng/weinasi')
         print rv.data
+
+    def test_Mod_Annoucement(self):
+        self.test_Issue_Ann()
+        rv = self.app.post('/masterlvng/weinasi',data=dict(
+                Mod_content='{"addr":"yingdong"}'
+            ))
+        assert 'mod' in rv.data
+        rv1 = self.app.get('/masterlvng/weinasi')
+
+    def test_Mod_Form(self):
+        self.test_Issue_Ann()
+        with open('Form2.doc') as f:
+            form = StringIO(f.read())
+        rv = self.app.post('/mod/form/weinasi',data=dict(\
+                form=(form,'Form2.doc')
+            ))
+        print rv.data
+        assert 'success' in rv.data
 
 def suite():
     suite = unittest.TestSuite()
-    #suite.addTest(TestCase('test_Login'))
-    suite.addTest(TestCase('test_Dis_Annoucement'))
+    suite.addTest(TestCase('test_Mod_Form'))
     return suite
 
 if __name__ == '__main__':

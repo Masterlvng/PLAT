@@ -32,3 +32,10 @@ class AnnoucementForm(Form):
     qna = TextField('qna')
     accept_apply = IntegerField('accept_apply', validators = [AnyOf([0,1])])
 
+class Mod_Form(Form):
+    form = FileField('form', validators = [\
+            FileAllowed(['doc','docx'],'doc,docx only!')])
+
+class Mod_Poster(Form):
+    poster = FileField('poster', validators = [\
+            FileAllowed(['jpg','png'],'jpg,png only!')])

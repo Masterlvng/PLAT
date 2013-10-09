@@ -4,7 +4,7 @@ from app.models import User,Annoucement
 from app import db
 from sqlalchemy.ext.declarative import DeclarativeMeta
 import json
-
+from datetime import datetime
 
 class AlchemyEncoder(json.JSONEncoder):
     def default(self,obj):
@@ -17,9 +17,19 @@ class AlchemyEncoder(json.JSONEncoder):
                     json.dumps(data)
                     fields[field] = data
                 except TypeError:
-                    fields[field] = None
+                    if isinstance(data,datetime):
+                        fields[field] = str(data)
+                    else:
+                        fields[field] = None
             return fields
         return json.JSONEncoder.default(self, obj)
+
+def mod_obj_by_json(obj,json,value_dont_changed):
+    if not isinstance(json,dict):
+        return NotImplemented
+    for field in [ key for key in json if key in dir(obj) and \
+            key not in value_dont_changed ]:
+        obj.__setattr__(field,json[field])
 
 def load_user_by_id(id):
     return User.query.filter(User.id==id).first()
@@ -79,3 +89,16 @@ def check_annoucement_path(fn):
             return fn(*args, **kwargs)
         abort(404)
     return decorator
+
+def require_ann_owner(fn):
+    @wraps(fn)
+    def decorator(*args, **kwargs):
+        if g.user is None:
+            return 'please login!'
+        ann_name = request.path.split('/')[-1]
+        ann = load_ann_by_name(ann_name)
+        if ann.owner == g.user:
+            return fn(*args,**kwargs)
+        return 'no permission!'
+    return decorator
+
