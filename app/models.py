@@ -22,6 +22,11 @@ class User(db.Model):
     annoucements = db.relationship('Annoucement', backref = 'owner', \
             lazy = 'dynamic')
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.id == other.id
+        return NotImplemented
+
     def __repr__(self):
         return '<User %r>' % (self.nickname)
 

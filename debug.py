@@ -51,10 +51,15 @@ class TestCase(unittest.TestCase):
             ))
         assert 'success' in rv.data
 
+    def test_Dis_Annoucement(self):
+        self.test_Issue_Ann()
+        rv = self.app.get('/masterlvng/weinasi')
+        print rv.data
+
 def suite():
     suite = unittest.TestSuite()
     #suite.addTest(TestCase('test_Login'))
-    suite.addTest(TestCase('test_Issue_Ann'))
+    suite.addTest(TestCase('test_Dis_Annoucement'))
     return suite
 
 if __name__ == '__main__':

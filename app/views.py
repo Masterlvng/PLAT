@@ -1,13 +1,15 @@
-from flask import g, render_template
+from flask import g, render_template, request, abort
 from app import app, db
 from utils import current_user, logout_user, load_user_by_name,\
-        load_user_by_email, remember_user,Role_required, check_annoucement_name
+        load_user_by_email, remember_user,Role_required, annoucement_exist,\
+        check_annoucement_path, AlchemyEncoder, load_ann_by_name
 from forms import LoginForm, AnnoucementForm
 from models import ROLE_USER, ROLE_OFFICIAL, ROLE_ADMIN,\
         Annoucement
 from werkzeug import secure_filename
 
 import os
+import json
 
 @app.before_request
 def before_request():
@@ -44,10 +46,8 @@ def issue_annoucement():
     form = AnnoucementForm()
     form_name, poster_name = None, None
     if form.validate_on_submit():
-        if not check_annoucement_name(form.name.data):
+        if annoucement_exist(form.name.data):
             return 'name exists!'
-
-        print form.accept_apply.data
         if form.accept_apply.data == 1:
             annouce_dir = os.path.join(app.config['APPLICANT_DIR'],form.name.data)
             os.mkdir(annouce_dir)
@@ -81,7 +81,30 @@ def issue_annoucement():
         db.session.add(ann)
         db.session.commit()
         return 'success!'
-    print form.errors
-    return 'fail!'
+    return str(form.errors)
 
 
+@app.route('/<official>/<ann>',methods=['GET','POST'])
+@check_annoucement_path
+def annoucement(official,ann):
+    '''
+    if GET then return ann in json format
+    if POST ,it means that someone apply
+    '''
+    if request.method == 'GET':
+        user = load_user_by_name(official)
+        annoucement = load_ann_by_name(ann)
+        if annoucement.owner == user:
+            return json.dumps(annoucement, cls=AlchemyEncoder)
+        abort(404)
+    elif request.method == 'POST':
+        pass
+    abort(403)
+
+@app.route('/<official>')
+def offcial(official):
+    pass
+
+@app.route('/user/<name>')
+def profile(name):
+    pass
