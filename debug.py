@@ -53,7 +53,7 @@ class TestCase(unittest.TestCase):
 
     def test_Dis_Annoucement(self):
         self.test_Issue_Ann()
-        rv = self.app.get('/masterlvng/weinasi')
+        rv = self.app.get('/masterlvn/weinasi')
         print rv.data
 
 def suite():

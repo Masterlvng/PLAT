@@ -92,11 +92,8 @@ def annoucement(official,ann):
     if POST ,it means that someone apply
     '''
     if request.method == 'GET':
-        user = load_user_by_name(official)
         annoucement = load_ann_by_name(ann)
-        if annoucement.owner == user:
-            return json.dumps(annoucement, cls=AlchemyEncoder)
-        abort(404)
+        return json.dumps(annoucement, cls=AlchemyEncoder)
     elif request.method == 'POST':
         pass
     abort(403)

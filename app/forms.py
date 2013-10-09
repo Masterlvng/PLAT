@@ -1,0 +1,34 @@
+from flask_wtf import Form
+
+from flask_wtf.file import FileAllowed, FileField
+from wtforms import TextField, PasswordField, DateField, IntegerField,\
+        BooleanField
+
+from wtforms.validators import Required, AnyOf
+from app.models import SCOPE_CAMPUS, SCOPE_ALL, SCOPE_COLLAGE
+
+class LoginForm(Form):
+    account = TextField('account', validators = [Required()])
+    password = PasswordField('password', validators = [Required()])
+
+class AnnoucementForm(Form):
+    name = TextField('name',validators = [Required()])
+    topic = TextField('topic',validators = [Required()])
+    summary = TextField('summary',validators = [Required()])
+    poster = FileField('poster', validators = [\
+            FileAllowed(['jpg','png'],'jpg,png only!')
+            ])
+    addr = TextField('addr',validators = [Required()])
+    sdate = DateField('sdate',validators = [Required()])
+    scope = IntegerField('scope',validators = [AnyOf([SCOPE_CAMPUS,SCOPE_ALL,\
+            SCOPE_COLLAGE])])
+    host = TextField('host', validators = [Required()])
+    undertaker = TextField('undertaker', validators = [Required()])
+    sponsor = TextField('sponsor')
+    contact = TextField('contact')
+    remark = TextField('remark')
+    form = FileField('form', validators = [\
+            FileAllowed(['doc','docx'],'doc,docx only!')])
+    qna = TextField('qna')
+    accept_apply = IntegerField('accept_apply', validators = [AnyOf([0,1])])
+
