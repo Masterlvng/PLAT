@@ -12,6 +12,14 @@ SCOPE_ALL = 2
 MALE = 0
 FEMALE = 1
 
+GRADE_ONE = 1
+GRADE_TWO = 2
+GRADE_THREE = 3
+GRADE_FOUR = 4
+
+POSTGRADUATE = 5
+HIGHER = 6
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     nickname = db.Column(db.String(80), unique = True)
@@ -62,6 +70,7 @@ class Apply(db.Model):
     name = db.Column(db.String(20))
     sex = db.Column(db.SmallInteger, default = MALE)
     collage = db.Column(db.String(40))
+    grade = db.Column(db.Integer)
     major = db.Column(db.String(40))
     no_student = db.Column(db.String(20))
     contact = db.Column(db.String(500))

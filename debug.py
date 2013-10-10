@@ -79,9 +79,34 @@ class TestCase(unittest.TestCase):
         print rv.data
         assert 'success' in rv.data
 
+    def test_Apply(self):
+        self.test_Issue_Ann()
+        with open('Zhangliangfu.doc') as f:
+            form = StringIO(f.read())
+        rv = self.app.post('/apply/masterlvng/weinasi',data=dict(\
+            name='zhangliangfu',
+            sex=0,
+            contact="qq=370378348",
+            form=(form,'zhangliangfu.doc')
+            ))
+        print rv.data
+        assert 'suc' in rv.data
+
+    def test_down_forms(self):
+        self.test_Issue_Ann()
+        rv = self.app.get('/forms/masterlvng/weinasi')
+        print rv.data
+
+    def test_stat_forms(self):
+        self.test_Apply()
+        rv = self.app.get('/statistics/masterlvng/weinasi')
+        print rv.data
+
+
+
 def suite():
     suite = unittest.TestSuite()
-    suite.addTest(TestCase('test_Mod_Form'))
+    suite.addTest(TestCase('test_stat_forms'))
     return suite
 
 if __name__ == '__main__':

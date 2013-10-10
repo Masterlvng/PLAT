@@ -5,7 +5,7 @@ from wtforms import TextField, PasswordField, DateField, IntegerField,\
         BooleanField
 
 from wtforms.validators import Required, AnyOf
-from app.models import SCOPE_CAMPUS, SCOPE_ALL, SCOPE_COLLAGE
+from app.models import SCOPE_CAMPUS, SCOPE_ALL, SCOPE_COLLAGE, MALE, FEMALE
 
 class LoginForm(Form):
     account = TextField('account', validators = [Required()])
@@ -39,3 +39,15 @@ class Mod_Form(Form):
 class Mod_Poster(Form):
     poster = FileField('poster', validators = [\
             FileAllowed(['jpg','png'],'jpg,png only!')])
+
+class Apply_Form(Form):
+    name = TextField('name', validators = [Required()])
+    sex = IntegerField('sex', validators = [AnyOf([MALE,FEMALE])])
+    collage = TextField('collage')
+    major = TextField('major')
+    no_student = TextField('no_student')
+    contact = TextField('contact', validators = [Required()])
+    form = FileField('form', validators = [\
+            FileAllowed(['doc','docx'],'doc,docx only!')])
+
+

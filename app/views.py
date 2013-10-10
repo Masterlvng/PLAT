@@ -1,13 +1,13 @@
-from flask import g, render_template, request, abort
+from flask import g, render_template, request, abort, current_app, send_file
 from app import app, db
 from utils import *
-from forms import LoginForm, AnnoucementForm,Mod_Form,Mod_Poster
-from models import ROLE_USER, ROLE_OFFICIAL, ROLE_ADMIN,\
-        Annoucement
+from forms import *
+from models import *
 from werkzeug import secure_filename
 
 import os
 import json
+import uuid
 
 @app.before_request
 def before_request():
@@ -135,7 +135,7 @@ def mod_ann_form(ann):
     return 'error'
 
 
-@app.route('/mod/poster<ann>',methods=['POST'])
+@app.route('/mod/poster/<ann>',methods=['POST'])
 @require_ann_owner
 def mod_ann_poster(ann):
     form = Mod_Poster()
@@ -148,7 +148,66 @@ def mod_ann_poster(ann):
     return 'error'
 
 
-@app.route('/apply/<official>/<ann>')
+@app.route('/apply/<official>/<ann>',methods=['POST'])
 @check_annoucement_path
-def apply(offcial,ann,methods=['POST']):
-    pass
+def apply(official,ann):
+    form = Apply_Form()
+    if form.validate_on_submit():
+        ann_id = load_ann_by_name(ann).id
+        if form.form.file is not None:
+            applicant_dir = os.path.join(app.config['APPLICANT_DIR'],ann)
+            form_path = os.path.join(applicant_dir,form.form.file.filename)
+            if os.path.exists(form_path):
+                suffix = form.form.file.filename.split('.')[-1]
+                name = form.form.file.filename.split('.')[0]
+                new_name = name + '_' + str(uuid.uuid1())[:8] + '.' + suffix
+                form_path = os.path.join(applicant_dir,new_name)
+            form.form.file.save(form_path)
+        apply = Apply(annoucement_id=ann_id,\
+                name=form.name.data,
+                sex=form.sex.data,
+                collage=form.collage.data,
+                major=form.major.data,
+                no_student=form.no_student.data,
+                contact=form.contact.data)
+        db.session.add(apply)
+        db.session.commit()
+        return 'success'
+    return 'error'
+
+@app.route('/forms/<official>/<ann>',methods=['GET'])
+@check_annoucement_path
+@require_ann_owner
+def down_ann_form(official,ann):
+    forms_dir = os.path.join(current_app.config['APPLICANT_DIR'],ann)
+    if os.path.exists(forms_dir):
+        ziped_file = os.path.join(current_app.config['APPLICANT_DIR'],\
+                ann+'.zip')
+        os.system('zip %r %r' % (str(ziped_file),str(forms_dir)))
+        return send_file(ziped_file)
+    return 'error'
+
+@app.route('/statistics/<official>/<ann>',methods=['GET'])
+@check_annoucement_path
+def stat_of_ann(official,ann):
+    result = {}
+    annoucement = load_ann_by_name(ann)
+    ann_id = annoucement.id
+    applicants = Apply.query.filter(Apply.annoucement_id==ann_id).all()
+    result['nApplicants']=len(applicants)
+    '''
+    bad performance but code is short
+    '''
+    result['nMale']= len([x for x in applicants if x.sex==MALE])
+    result['nGradeOne']= len([x for x in applicants if x.grade==GRADE_ONE])
+    result['nGradeTwo']= len([x for x in applicants if x.grade==GRADE_TWO])
+    result['nGradeThree']= len([x for x in applicants if x.grade==GRADE_THREE])
+    result['nGradeFour']= len([x for x in applicants if x.grade==GRADE_FOUR])
+    result['nPostGra']= len([x for x in applicants if x.grade==POSTGRADUATE])
+    result['nHigher']= len([x for x in applicants if x.grade==HIGHER])
+    return json.dumps(result)
+
+
+
+
+

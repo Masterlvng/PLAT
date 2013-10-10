@@ -76,7 +76,7 @@ def user_exist(name):
 def check_annoucement_path(fn):
     @wraps(fn)
     def decorator(*args, **kwargs):
-        official, ann = request.path.split('/')[1:]
+        official, ann = request.path.split('/')[-2:]
         '''
         if not user_exist(user):
             return 'user not exist'
