@@ -103,12 +103,18 @@ def annoucement(official,ann):
         return 'mod success!'
     abort(403)
 
-@app.route('/<official>')
-def offcial(official):
-    '''
-    show all
-    '''
-    pass
+@app.route('/<official>',methods=['POST'])
+def official(official):
+    user = load_offi_by_name(official)
+    if user is not None:
+        start = request.form['start']
+        offset = request.form['offset']
+        result = []
+        anns = seek_ones_ann(user,int(start),int(offset))
+        for ann in anns:
+            result.append(json.dumps(ann,cls=AlchemyEncoder))
+        return json.dumps(result)
+    abort(404)
 
 @app.route('/user/<name>')
 def profile(name):

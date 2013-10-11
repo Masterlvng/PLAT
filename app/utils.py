@@ -1,10 +1,11 @@
 from flask import session, abort, g, request, current_app
 from functools import wraps, update_wrapper
-from app.models import User,Annoucement
+from app.models import User,Annoucement,ROLE_OFFICIAL
 from app import db
 from sqlalchemy.ext.declarative import DeclarativeMeta
 import json
 from datetime import datetime
+from sqlalchemy import and_
 
 class AlchemyEncoder(json.JSONEncoder):
     def default(self,obj):
@@ -40,6 +41,9 @@ def load_user_by_name(name):
 def load_user_by_email(email):
     return User.query.filter(User.email==email).first()
 
+def load_offi_by_name(name):
+    return User.query.filter(and_(User.nickname==name,User.role==ROLE_OFFICIAL)).first()
+
 def load_ann_by_name(name):
     return Annoucement.query.filter(Annoucement.name==name).first()
 
@@ -69,6 +73,34 @@ def Role_required(*roles):
 
 def annoucement_exist(name):
     return Annoucement.query.filter(Annoucement.name==name).count() > 0
+
+def seek_ones_ann(user,start,offset,order=0):
+    '''
+    when order = 0 means order by rdate,
+    1 means order by sdate
+    '''
+    if  not isinstance(user,User):
+        return
+    if offset > 20:
+        offset = 20
+    if start == 0 and order == 0:
+        return Annoucement.query.filter(Annoucement.user_id==user.id).\
+                order_by('rdate desc').limit(offset)
+    elif start == 0 and order == 1:
+        return Annoucement.query.filter(Annoucement.user_id==user.id).\
+                order_by('sdate desc').limit(offset)
+    ann = Annoucement.query.filter(Annoucement.id==start).first()
+    if ann is None:
+        return None
+    if order == 0:
+        return Annoucement.query.filter( and_(Annoucement.user_id==user.id,\
+                Annoucement.rdate < ann.rdate)).order_by('rdate desc').limit(offset)
+    else:
+        return Annoucement.query.filter( and_(Annoucement.user_id==user.id,\
+                Annoucement.sdate < ann.sdate)).order_by('sdate desc').limit(offset)
+
+def seek_all_ann(start,offset):
+    pass
 
 def user_exist(name):
     return User.query.filter(User.nickname==name).count() > 0

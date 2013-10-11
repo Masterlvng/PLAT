@@ -102,11 +102,17 @@ class TestCase(unittest.TestCase):
         rv = self.app.get('/statistics/masterlvng/weinasi')
         print rv.data
 
-
+    def test_User_Anns(self):
+        self.test_Issue_Ann()
+        rv = self.app.post('/masterlvng',data=dict(
+                start=0,
+                offset=2
+            ))
+        print rv.data
 
 def suite():
     suite = unittest.TestSuite()
-    suite.addTest(TestCase('test_stat_forms'))
+    suite.addTest(TestCase('test_User_Anns'))
     return suite
 
 if __name__ == '__main__':
